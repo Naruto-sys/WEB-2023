@@ -1,0 +1,11 @@
+{% load static %}
+
+<div class="col-3 likes">
+    <p>
+        {{ question.likes }}
+        <button type="submit" class="btn btn-sm like-btn">
+            <img src="{% static '/images/like.svg' %}" class="like-img" alt="like" width="16px"
+                 height="16px">
+        </button>
+    </p>
+</div>
