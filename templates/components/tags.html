@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% load static %}
+
+<div class="question-tags col-5" align="left">
+    Теги:
+    {% for tag in question.tags %}
+    <a href="{% url 'tag' tag %}">{{ tag }}</a>
+    {% endfor %}
+</div>

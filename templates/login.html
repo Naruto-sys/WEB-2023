@@ -1,158 +1,35 @@
-<!doctype html>
-<html lang="en" class="h-100">
-<head>
-    <title>Log in</title>
-    <!-- Bootstrap core CSS -->
-    <link href="../static/bootstrap-5.0.2-dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="../static/bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom styles for this template -->
-    <link href="../static/css/main.css" rel="stylesheet">
-</head>
-<body class="d-flex flex-column h-100">
-<header>
-    <!-- Fixed navbar -->
-    <nav class="navbar navbar-expand-sm navbar-light fixed-top" style="background-color: #e3f2fd;">
-        <div class="container-fluid">
-            <div class="collapse navbar-collapse d-flex justify-content-start">
-                <ul class="navbar-nav me-auto mb-2 mb-md-0">
-                    <li class="nav-item">
-                        <a class="logo-link" href="index.html">
-                            <h1 class="navbar-brand mb-2 mb-md-0">
-                                <img class="logo-png" src="../static/images/logo.png" alt="logo-png" width="30px"
-                                     height="30px">
-                                Вопроcник
-                            </h1></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link menu-item" aria-current="page" href="#">О нас</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link menu-item" aria-current="page" href="#">Поддержка</a>
-                    </li>
-                </ul>
-            </div>
+{% extends 'layouts/base_no_user.html' %}
+{% load static %}
 
-            <div class="navbar-collapse collapse d-flex justify-content-start">
-                <form class="d-flex">
-                    <input class="form-control me-2" type="search" placeholder="Введите запрос"
-                           aria-label="Search">
-                    <button class="btn btn-outline-primary my-2 my-sm-0 " type="submit">Найти</button>
-                </form>
+{% block content %}
+<div class="col-12">
+    <h1>Авторизация</h1>
+</div>
+<div class="row" align="center">
+    <form>
+        <div class="form-group col-12 row reg-input" align="left">
+            <div class="col-4">
+                <h4>Логин</h4>
             </div>
-
-            <div class="collapse navbar-collapse justify-content-end">
-                <ul class="navbar-nav me-0 mb-2 mb-md-0 ">
-                    <li class="nav-item">
-                        <a class="nav-link menu-item" aria-current="page" href="login.html">
-                            <button type="button" class="btn btn-outline-info my-2 ">
-                                Войти
-                            </button>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link menu-item" aria-current="page" href="signup.html">
-                            <button class="btn btn-outline-info my-2">
-                                Зарегистрироваться
-                            </button>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-</header>
-<!-- Begin page content -->
-<main class="flex-shrink-0">
-    <div class="container">
-        <div class="row">
             <div class="col-8">
-                <div class="col-12">
-                    <h1>Авторизация</h1>
-                </div>
-                <div class="row" align="center">
-                    <form>
-                        <div class="form-group col-12 row reg-input" align="left">
-                            <div class="col-4">
-                                <h4>Логин</h4>
-                            </div>
-                            <div class="col-8">
-                                <input type="text" class="form-control" maxlength="40"
-                                       placeholder="Введите ваш логин">
-                            </div>
-                        </div>
-                        <div class="form-group col-12 row reg-input" align="left">
-                            <div class="col-4">
-                                <h4>Пароль</h4>
-                            </div>
-                            <div class="col-8">
-                                <input type="password" class="form-control" maxlength="40"
-                                       placeholder="Введите ваш пароль">
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-lg btn-info signup-button">Войти</button>
-                        <p class="error">Неправильный пароль!</p>
-                        <a href="signup.html" class="link">
-                            Создать новый аккаунт
-                        </a>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Правая часть страницы -->
-            <div class="col-4" align="left">
-                <div class="row tags-div">
-                    <div class="tags-title">
-                        <h2>Популярные теги</h2>
-                    </div>
-                    <div class="tags">
-                        <span class="badge bg-primary">Python</span>
-                        <span class="badge bg-info">Django</span>
-                        <span class="badge bg-primary">CSS</span>
-                        <span class="badge bg-info">Bootstrap</span>
-                        <span class="badge bg-primary">Javascript</span>
-                        <span class="badge bg-info">Opera</span>
-                        <span class="badge bg-primary">MySQL</span>
-                    </div>
-                </div>
-                <div class="row members-div">
-                    <div class="members-title">
-                        <h2>Топ-5 рейтинга</h2>
-                    </div>
-                    <div class="members">
-                        <ol class="list-group list-group-flush">
-                            <li class="list-group-item">
-                                <a href="">Miposhka</a>
-                            </li>
-                            <li class="list-group-item">
-                                <a href="">Yatoro</a>
-                            </li>
-                            <li class="list-group-item">
-                                <a href="">Miraslav</a>
-                            </li>
-                            <li class="list-group-item">
-                                <a href="">Maga Halipov</a>
-                            </li>
-                            <li class="list-group-item">
-                                <a href="">Sanya Levin</a>
-                            </li>
-                        </ol>
-                    </div>
-                </div>
+                <input type="text" class="form-control" maxlength="40"
+                       placeholder="Введите ваш логин">
             </div>
         </div>
-    </div>
-</main>
-
-<footer class="footer mt-auto py-3 bg-light">
-    <div class="container">
-        <span class="text-muted">©Footer is here.</span>
-    </div>
-</footer>
-
-<script src="/docs/5.0/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-        crossorigin="anonymous"></script>
-
-
-</body>
-</html>
+        <div class="form-group col-12 row reg-input" align="left">
+            <div class="col-4">
+                <h4>Пароль</h4>
+            </div>
+            <div class="col-8">
+                <input type="password" class="form-control" maxlength="40"
+                       placeholder="Введите ваш пароль">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-lg btn-info signup-button">Войти</button>
+        <p class="error">Неправильный пароль!</p>
+        <a href="{% url 'signup' %}" class="link">
+            Создать новый аккаунт
+        </a>
+    </form>
+</div>
+{% endblock %}

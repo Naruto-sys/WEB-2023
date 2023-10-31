@@ -15,14 +15,24 @@ img.avatar {
 .answer {
     border: 1px solid #B931FC;
 }
-.question-image, .answer-image {
-    margin-top: 1rem;
+.question-image {
+    margin-bottom: 1rem;
+    margin-right: 1rem;
     max-width: 10rem;
     max-height: 10rem;
     float: left;
     display: inline;
     margin-right: 10px;
 }
+.answer-image {
+    margin-right: 1rem;
+    max-width: 5rem;
+    max-height: 5rem;
+    float: left;
+    display: inline;
+    margin-right: 10px;
+}
+
 .question-title, .answer-tittle {
     text-align: center;
 }
@@ -42,6 +52,7 @@ img.avatar {
     padding-bottom: 15px;
 }
 .answer-text {
+    overflow: hidden;
     border-bottom: 1px solid black;
     font-size: 20px;
     padding-bottom: 15px;
@@ -118,7 +129,7 @@ img.avatar {
     margin-bottom: 2rem;
 }
 .signup-button {
-    margin-top: 2rem;
+    margin-top: 1rem;
     margin-bottom: 1rem;
 }
 textarea {
