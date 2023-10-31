@@ -1,20 +1,26 @@
 {% load static %}
 
-<div class="col-12 row question">
-    <div class="question-title">
-        <a href="{% url 'question' question.id %}"><h3>{{ question.title }}</h3></a>
-    </div>
-    <div class="question-body">
-        <img src="{% static '/images/Aang.png' %}" class="question-image" alt="Question img">
-        <p class="question-text">
-            {{ question.content }}
+<div class="row answer">
+    <div class="answer-body">
+        <p class="answer-text">
+            <img src="{% static '/images/avatar.jpg' %}" class="answer-image" alt="answer img">
+            {{ answer.content }}
         </p>
-        <div class="row question-bot">
-            <div class="answers col-4">
-                <a href="{% url 'question' question.id %}">Ответы ({{ question.answers_count }})</a>
+        <div class="row answer-bot">
+            <div class="col-9" align="left">
+                <form>
+                    <div class="form-check" align="left">
+                        <input class="form-check-input" type="checkbox" value="" id="{{ answer.id }}ans">
+                        <label class="form-check-label" for="{{ answer.id }}ans">
+                            Правильный ответ
+                        </label>
+                        <button type="submit" class="btn btn-sm btn-outline-info correct-btn">
+                            Подтвердить
+                        </button>
+                    </div>
+                </form>
             </div>
-            {% include 'components/tags.html' %}
-            {% include 'components/likes.html' %}
+            {% include 'components/answer_likes.html' %}
         </div>
     </div>
 </div>
