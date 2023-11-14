@@ -3,10 +3,10 @@
 {% block content %}
 <div class="row">
     <div class="col-8">
-        <h1>Новейшие вопросы</h1>
+        <h1>Лучшие вопросы</h1>
     </div>
     <div class="col-4" style="margin-top:1rem;font-size:18px;">
-        <a class="link" href="{% url 'hot' %}">Лучшие вопросы</a>
+        <a class="link" href="{% url 'index' %}">Новейшие вопросы</a>
     </div>
 </div>
 {% for question in questions %}

@@ -3,13 +3,13 @@
 {% load static %}
 
 {% block content %}
-{%include 'components/question-main.html' %}
+{% include 'components/question-main.html' %}
 <div class="row answers-tittle">
     <h2>Ответы</h2>
 </div>
 
 {% for answer in answers %}
-{% include 'components/answer-item.html' %}
+    {% include 'components/answer-item.html' %}
 {% endfor %}
 
 {% include 'components/paginator.html'%}

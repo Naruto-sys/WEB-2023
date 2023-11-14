@@ -2,15 +2,16 @@
 
 <div class="col-12 row question">
     <div class="question-title">
-        <h1>{{ question.title }}</h1>
+        <h1>{{ question.question_title }}</h1>
     </div>
     <div class="question-body">
         <p class="question-text">
             <img src="{% static '/images/Aang.png' %}" class="question-image" alt="Question img">
-            {{ question.content }}
+            {{ question.question_body }}
         </p>
         <div class="row question-bot">
             {% include 'components/tags.html' %}
+            <div class="col-4"></div>
             {% include 'components/question_likes.html' %}
         </div>
     </div>
