@@ -2,16 +2,16 @@
 
 <div class="col-12 row question">
     <div class="question-title">
-        <a href="{% url 'question' question.id %}"><h3>{{ question.title }}</h3></a>
+        <a href="{% url 'question' question.question_id %}"><h3>{{ question.question_title }}</h3></a>
     </div>
     <div class="question-body">
         <img src="{% static '/images/Aang.png' %}" class="question-image" alt="Question img">
         <p class="question-text">
-            {{ question.content }}
+            {{ question.question_view }}
         </p>
         <div class="row question-bot">
             <div class="answers col-4">
-                <a href="{% url 'question' question.id %}">Ответы ({{ question.answers_count }})</a>
+                <a href="{% url 'question' question.question_id %}">Ответы ({{ question.answers_count }})</a>
             </div>
             {% include 'components/tags.html' %}
             {% include 'components/question_likes.html' %}

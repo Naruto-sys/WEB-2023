@@ -1,6 +1,9 @@
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render
 
+from App.models import Question, Answer, Tag
+
+
 ANSWERS = [
     {
         'title': 'title' + str(i),
@@ -40,19 +43,25 @@ def paginate(objects, request, per_page=10):
 
 
 def index(request):
-    page_obj = paginate(QUESTIONS, request, 10)
-    return render(request, "index.html", {'questions': page_obj.object_list, 'page_obj': page_obj})
+    questions = list(Question.objects.get_newest_questions())
+    page_obj = paginate(questions, request, 10)
+    return render(request, "index.html",
+                  {'questions': page_obj.object_list, 'page_obj': page_obj})
 
 
 def question(request, question_id):
-    current_question = QUESTIONS[question_id]
-    page_obj = paginate(current_question['answers'], request, 5)
+    current_question = list(Question.objects.get_question_by_id(question_id))[0]
+    answers = list(Answer.objects.get_answers_by_question(current_question))
+    page_obj = paginate(answers, request, 5)
     return render(request, "question.html",
                   {'question': current_question, 'answers': page_obj.object_list, 'page_obj': page_obj})
 
 
-def hot(request): # Разницы пока что никакой
-    return render(request, "index.html", {'questions': paginate(QUESTIONS, request, 4)})
+def hot(request):
+    questions = list(Question.objects.get_hot_questions())
+    page_obj = paginate(questions, request, 10)
+    return render(request, "hot.html",
+                  {'questions': page_obj.object_list, 'page_obj': page_obj})
 
 
 def login(request):
@@ -71,11 +80,18 @@ def end_session(request):
     return render(request, "login.html")
 
 
-def tag(request, tag_name):
-    tag_questions = QUESTIONS_BY_TAG[tag_name]
+def tag(request, tag_title):
+    tag = list(Tag.objects.get_tag_by_title(tag_title))[0]
+    tag_questions = Question.objects.get_questions_by_tag(tag)
     page_obj = paginate(tag_questions, request, 10)
-    return render(request, "listtag.html", {'questions': page_obj.object_list, 'tag': tag_name, 'page_obj': page_obj})
+    return render(request, "listtag.html",
+                  {'questions': page_obj.object_list, 'tag': tag_title, 'page_obj': page_obj})
 
 
 def profile(request, profile_id=0):
     return render(request, "profile.html")
+
+
+def handler404(request, *args, **argv):
+    print("HERE")
+    return render(request, "404.html", status=404)
