@@ -73,6 +73,7 @@ class Profile(models.Model):
 class Tag(models.Model):
     tag_title = models.CharField(primary_key=True, max_length=50)
     objects = TagManager()
+
     def __str__(self):
         return self.tag_title
 
