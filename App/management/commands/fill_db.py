@@ -37,7 +37,7 @@ class Command(BaseCommand):
             profiles.append(
                 Profile(
                     user=users[_],
-                    nickname=fake.name(),
+                    nickname=''.join(random.choices(string.ascii_letters + string.digits, k=random.randint(8, 25))),
                 )
             )
         Profile.objects.bulk_create(profiles)
@@ -64,7 +64,7 @@ class Command(BaseCommand):
                 question.question_view = question.question_body[0:100] + "..."
             else:
                 question.question_view = question.question_body
-            questions_tags = random.sample(tags, random.randint(1, 3))
+            questions_tags = random.sample(tags, random.randint(1, min(3, num)))
             [question.tags.add(question_tag) for question_tag in questions_tags]
             question.save()
         return questions
@@ -83,7 +83,7 @@ class Command(BaseCommand):
         return answers
 
     def create_likes(self, users, questions, answers, num):
-        for _ in range(num * 200):  # Заменить на * 200
+        for _ in range(num * 200):
             if random.randint(0, 1):
                 question = random.choice(questions)
                 question.likes_count += 1

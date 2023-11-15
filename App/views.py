@@ -3,31 +3,8 @@ from django.shortcuts import render
 
 from App.models import Question, Answer, Tag
 
-
-ANSWERS = [
-    {
-        'title': 'title' + str(i),
-        'id': i,
-        'content': 'text' + str(i),
-        'likes': 15 + i
-    }
-    for i in range(100)
-]
-
-QUESTIONS = [
-    {
-        'title': 'title' + str(i),
-        'id': i,
-        'content': 'text' + str(i),
-        'tags': ['tag1', 'tag2', 'tag3'],
-        'answers_count': 100,
-        'likes': 15 + i,
-        'answers': ANSWERS,
-    }
-    for i in range(100)
-]
-
-QUESTIONS_BY_TAG = {'tag1': QUESTIONS, 'tag2': QUESTIONS, 'tag3': QUESTIONS}
+HOT_QUESTIONS = list(Question.objects.get_hot_questions())
+NEWEST_QUESTIONS = list(Question.objects.get_newest_questions())
 
 
 def paginate(objects, request, per_page=10):
@@ -43,7 +20,7 @@ def paginate(objects, request, per_page=10):
 
 
 def index(request):
-    questions = list(Question.objects.get_newest_questions())
+    questions = NEWEST_QUESTIONS
     page_obj = paginate(questions, request, 10)
     return render(request, "index.html",
                   {'questions': page_obj.object_list, 'page_obj': page_obj})
@@ -58,7 +35,7 @@ def question(request, question_id):
 
 
 def hot(request):
-    questions = list(Question.objects.get_hot_questions())
+    questions = HOT_QUESTIONS
     page_obj = paginate(questions, request, 10)
     return render(request, "hot.html",
                   {'questions': page_obj.object_list, 'page_obj': page_obj})
@@ -93,5 +70,4 @@ def profile(request, profile_id=0):
 
 
 def handler404(request, *args, **argv):
-    print("HERE")
     return render(request, "404.html", status=404)
