@@ -39,14 +39,21 @@
             <div class="collapse navbar-collapse justify-content-end">
                 <ul class="navbar-nav me-0 mb-2 mb-md-0 ">
                     <li class="nav-item">
-                        <a class="nav-link menu-item" aria-current="page" href="{% url 'login' %}">
+                        <a class="nav-link menu-item" aria-current="page" href="{% url 'ask' %}">
+                            <button type="button" class="btn btn-outline-info my-2 ">
+                                Спросить
+                            </button>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link menu-item" aria-current="page" href="{% url 'login'  %}?continue={{ request.path }}">
                             <button type="button" class="btn btn-outline-info my-2 ">
                                 Войти
                             </button>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link menu-item" aria-current="page" href="{% url 'signup' %}">
+                        <a class="nav-link menu-item" aria-current="page" href="{% url 'signup' %}?continue={{ request.path }}">
                             <button class="btn btn-outline-info my-2">
                                 Зарегистрироваться
                             </button>

@@ -45,6 +45,13 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link menu-item" aria-current="page" href="{% url 'ask' %}">
+                            <button type="button" class="btn btn-outline-info my-2 ">
+                                Спросить
+                            </button>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link menu-item" aria-current="page" href="{% url 'profile' %}">
                             <button type="button" class="btn btn-outline-info my-2 ">
                                 Профиль
@@ -52,7 +59,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link menu-item" aria-current="page" href="{% url 'login' %}">
+                        <a class="nav-link menu-item" aria-current="page" href="{% url 'end_session' %}?continue={{ request.path }}">
                             <button class="btn btn-outline-info my-2">
                                 Выйти
                             </button>

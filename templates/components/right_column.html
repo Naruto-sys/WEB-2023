@@ -5,13 +5,13 @@
             <h2>Популярные теги</h2>
         </div>
         <div class="tags">
-            <span class="badge bg-primary">Python</span>
-            <span class="badge bg-info">Django</span>
-            <span class="badge bg-primary">CSS</span>
-            <span class="badge bg-info">Bootstrap</span>
-            <span class="badge bg-primary">Javascript</span>
-            <span class="badge bg-info">Opera</span>
-            <span class="badge bg-primary">MySQL</span>
+            {% for tag in popular_tags %}
+            <span class="badge bg-info">
+                <a class="popular-tags" href="{% url 'tag' tag.tag_title %}">
+                    {{ tag.tag_title }}
+                </a>
+            </span>
+            {% endfor %}
         </div>
     </div>
     <div class="row members-div">

@@ -1,25 +1,33 @@
-{% extends 'layouts/base_with_user.html'%}
-
+{% extends base %}
+{% load bootstrap5 %}
 {% load static %}
 
 {% block content %}
 {% include 'components/question-main.html' %}
-<div class="row answers-tittle">
+<div class="row answers-tittle" id="last-answer">
     <h2>Ответы</h2>
 </div>
 
 {% for answer in answers %}
-    {% include 'components/answer-item.html' %}
+{% include 'components/answer-item.html' %}
 {% endfor %}
 
 {% include 'components/paginator.html'%}
 
-<div class="row answer-input" align="center">
-    <form class="form-inline col-12">
-        <div class="textarea">
-            <textarea class="form-control" rows="5" placeholder="А вы как думаете?"></textarea>
-        </div>
-        <button type="submit" class="btn btn-sm btn-info correct-btn">Ответить</button>
+<div id="answer-form">
+    {% if request.user.is_authenticated %}
+    <form class="form-inline col-12" method="post">
+        {% bootstrap_form form %}
+        {% csrf_token %}
+        {% buttons %}
+        <button type="submit" class="btn btn-primary">А вы как думаете?</button>
+        {% endbuttons %}
     </form>
+
+    {% else %}
+    <div class="row answer-input" align="center">
+        <p> Вы сможете ответить, только если зарегистрируетесь на сайте </p>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

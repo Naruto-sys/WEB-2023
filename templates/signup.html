@@ -1,69 +1,23 @@
 {% extends 'layouts/base_no_user.html' %}
 {% load static %}
-
+{% load bootstrap5 %}
 {% block content %}
 <div class="col-12">
     <h1>Регистрация</h1>
-    <p class="error" style="margin-top: 2rem; font-size:18px;">Такой никнейм уже занят! (любая другая ошибка)</p>
-
 </div>
+
 <div class="row" align="center">
-    <form>
-        <div class="form-group col-12 row reg-input" align="left">
-            <div class="col-4">
-                <h4>Логин</h4>
-            </div>
-            <div class="col-8">
-                <input type="text" class="form-control" maxlength="40"
-                       placeholder="Введите ваш логин">
-            </div>
+    <form method="POST" class="form" enctype="multipart/form-data">
+        {% bootstrap_form form %}
+        {% csrf_token %}
+        <div class="row" align="center">
+            {% buttons %}
+            <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+            {% endbuttons %}
+            <a href="{% url 'signup' %}" class="link">
+                Уже есть аккаунт
+            </a>
         </div>
-        <div class="form-group col-12 row reg-input" align="left">
-            <div class="col-4">
-                <h4>Почта</h4>
-            </div>
-            <div class="col-8">
-                <!-- Здесь text а не email из-за стилей BS-->
-                <input type="text" class="form-control" maxlength="40"
-                       placeholder="Введите вашу почту">
-            </div>
-        </div>
-        <div class="form-group col-12 row reg-input" align="left">
-            <div class="col-4">
-                <h4>Никнейм</h4>
-            </div>
-            <div class="col-8">
-                <input type="text" class="form-control" maxlength="40"
-                       placeholder="Введите ваш никнейм">
-            </div>
-        </div>
-        <div class="form-group col-12 row reg-input" align="left">
-            <div class="col-4">
-                <h4>Пароль</h4>
-            </div>
-            <div class="col-8">
-                <input type="password" class="form-control" maxlength="40"
-                       placeholder="Введите ваш пароль">
-            </div>
-        </div>
-        <div class="form-group col-12 row reg-input" align="left">
-            <div class="col-4">
-                <h4>Повторите пароль</h4>
-            </div>
-            <div class="col-8">
-                <input type="password" class="form-control" maxlength="40"
-                       placeholder="Введите ваш пароль еще раз">
-            </div>
-        </div>
-        <div class="form-group col-12 row reg-input" align="left">
-            <div class="col-4">
-                <h4>Загрузить аватар</h4>
-            </div>
-            <div class="col-8">
-                <input class="form-control" type="file">
-            </div>
-        </div>
-        <button type="submit" class="btn btn-lg btn-info signup-button">Зарегистрироваться</button>
     </form>
 </div>
 {% endblock %}
