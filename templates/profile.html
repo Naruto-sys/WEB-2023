@@ -1,58 +1,20 @@
 {% extends 'layouts/base_with_user.html' %}
+{% load bootstrap5 %}
 {% load static %}
 
 {% block content %}
 <div class="col-12 div-top">
     <h1>Профиль</h1>
 </div>
-<div class="row" align="center">
-    <form>
-        <div class="form-group col-12 row profile-input" align="left">
-            <div class="col-4">
-                <h4>Логин</h4>
-            </div>
-            <div class="col-8">
-                <input type="text" class="form-control" maxlength="40" value="Аватар_xxX"
-                       placeholder="Введите ваш новый логин">
-            </div>
+<div class="row" align="left">
+    <form method="POST" class="form" enctype="multipart/form-data">
+        {% bootstrap_form form %}
+        {% csrf_token %}
+        <div class="row" align="center">
+            {% buttons %}
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            {% endbuttons %}
         </div>
-        <div class="form-group col-12 row profile-input" align="left">
-            <div class="col-4">
-                <h4>Почта</h4>
-            </div>
-            <div class="col-8">
-                <!-- Здесь text а не email из-за стилей BS-->
-                <input type="text" class="form-control" maxlength="40"
-                       placeholder="Введите вашу новую почту" value="Aang@mail.ru">
-            </div>
-        </div>
-        <div class="form-group col-12 row profile-input" align="left">
-            <div class="col-4">
-                <h4>Никнейм</h4>
-            </div>
-            <div class="col-8">
-                <input type="text" class="form-control" maxlength="40" value="ГлавныйXD"
-                       placeholder="Введите ваш новый никнейм">
-            </div>
-        </div>
-        <div class="form-group col-12 row profile-input" align="left">
-            <div class="col-4" align="left">
-                <h4>Текущий аватар</h4>
-            </div>
-            <div class="col-8">
-                <img src="{% static '/images/Aang.png' %}" class="question-image" alt="Question img">
-            </div>
-        </div>
-        <div class="form-group col-12 row profile-input" align="left">
-            <div class="col-4">
-                <h4>Новый аватар</h4>
-            </div>
-            <div class="col-8">
-                <input class="form-control" type="file">
-            </div>
-        </div>
-        <p class="error">Такой никнейм уже занят! (любая другая ошибка)</p>
-        <button type="submit" class="btn btn-lg btn-info signup-button">Сохранить</button>
     </form>
 </div>
 {% endblock %}

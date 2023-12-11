@@ -158,3 +158,13 @@ padding-top: 0.25rem;
 .navbar {
 background-color: #e3f2fd;
 }
+a.popular-tags {
+    color:white;
+}
+
+#last-answer {
+    padding-top: 55px;
+	margin-top: -55px;
+	-webkit-background-clip: content-box;
+	background-clip: content-box;
+}

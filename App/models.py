@@ -29,6 +29,10 @@ class TagManager(models.Manager):
     def get_tag_by_title(self, title):
         return self.filter(tag_title__exact=title)
 
+    def get_popular_tags(self):
+        all_tags = self.all()
+        return list(sorted(all_tags, key=lambda tag: -len(Question.objects.get_questions_by_tag(tag))))[:10]
+
 
 class Question(models.Model):
     question_id = models.AutoField(primary_key=True)
@@ -82,6 +86,9 @@ class QuestionLike(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     liked_by = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    class Meta:
+        unique_together = ('question', 'liked_by',)
+
     def __str__(self):
         return f"{str(self.question)};\t оценка от {str(self.liked_by)}"
 
@@ -89,6 +96,9 @@ class QuestionLike(models.Model):
 class AnswerLike(models.Model):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     liked_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('answer', 'liked_by',)
 
     def __str__(self):
         return f"{str(self.answer)};\t оценка от {str(self.liked_by)}"

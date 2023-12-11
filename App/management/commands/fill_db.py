@@ -54,6 +54,7 @@ class Command(BaseCommand):
 
     def create_questions(self, users, tags, num):
         questions = []
+        a = 0
         for _ in range(num * 10):
             question = Question.objects.create(
                 question_title=fake.text(max_nb_chars=100),
