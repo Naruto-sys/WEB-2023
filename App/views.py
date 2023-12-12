@@ -3,14 +3,25 @@ from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.forms import model_to_dict
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.utils.translation import activate
 from django.views.decorators.csrf import csrf_protect
-
+from django.shortcuts import get_object_or_404
 from App.forms import LoginForm, RegisterForm, AskForm, ProfileForm, AnswerForm
-from App.models import Question, Answer, Tag, Profile
+from App.models import Question, Answer, Tag, Profile, QuestionLike, AnswerLike
 
 activate('RU')
+
+
+def get_hot_questions():
+    return list(Question.objects.get_hot_questions())
+
+
+def get_newest_questions():
+    return list(Question.objects.get_newest_questions())
+
 
 HOT_QUESTIONS = list(Question.objects.get_hot_questions())
 NEWEST_QUESTIONS = list(Question.objects.get_newest_questions())
@@ -22,6 +33,20 @@ def get_base(request):
     if request.user.is_authenticated:
         return 'layouts/base_with_user.html'
     return 'layouts/base_no_user.html'
+
+
+def get_liked_list(request, answers=False):
+    try:
+        liked = []
+        for like in QuestionLike.objects.filter(liked_by=request.user):
+            liked.append(like.question)
+        if not answers:
+            return list(liked)
+        for like in AnswerLike.objects.filter(liked_by=request.user):
+            liked.append(like.answer)
+        return list(liked)
+    except TypeError:
+        return None
 
 
 def paginate(objects, request, per_page=10):
@@ -37,10 +62,11 @@ def paginate(objects, request, per_page=10):
 
 
 def index(request):
-    questions = NEWEST_QUESTIONS
+    questions = get_newest_questions()  # так правильно
+    # questions = NEWEST_QUESTIONS  # так быстрее
     page_obj = paginate(questions, request, 10)
-    context = {'questions': page_obj.object_list, 'page_obj': page_obj,
-               'base': get_base(request), 'request': request, 'popular_tags': POPULAR_TAGS}
+    context = {'questions': page_obj.object_list, 'page_obj': page_obj, 'base': get_base(request),
+               'liked_list': get_liked_list(request), 'request': request, 'popular_tags': POPULAR_TAGS}
     return render(request, "index.html", context)
 
 
@@ -49,16 +75,15 @@ def question(request, question_id):
     current_question = list(Question.objects.get_question_by_id(question_id))[0]
     answer_form = AnswerForm()
     answers = list(Answer.objects.get_answers_by_question(current_question))
+    correct_answers = list(Answer.objects.filter(question=current_question, is_correct=True))
     page_obj = paginate(answers, request, 5)
     context = {'question': current_question, 'answers': page_obj.object_list, 'form': answer_form,
-               'page_obj': page_obj, 'base': get_base(request), 'popular_tags': POPULAR_TAGS}
-
+               'page_obj': page_obj, 'base': get_base(request), 'popular_tags': POPULAR_TAGS,
+               'liked_list': get_liked_list(request, answers=True), 'correct_answers': correct_answers}
     if request.method == "POST":
         answer_form = AnswerForm(request.POST)
         if answer_form.is_valid():
-            text = answer_form.cleaned_data['text'].strip()
-            Answer.objects.create(question=current_question, answer_body=text,
-                                  author=request.user)
+            answer_form.save(user=request.user, question=current_question)
             return redirect(f"{request.path}?page=1#last-answer")
         else:
             return redirect(f"{request.path}?page={page_obj.number}#answer-form")
@@ -66,10 +91,11 @@ def question(request, question_id):
 
 
 def hot(request):
-    questions = HOT_QUESTIONS
+    questions = get_hot_questions()  # так правильно
+    # questions = HOT_QUESTIONS  # а так быстрее
     page_obj = paginate(questions, request, 10)
-    context = {'questions': page_obj.object_list, 'page_obj': page_obj,
-               'base': get_base(request), 'popular_tags': POPULAR_TAGS}
+    context = {'questions': page_obj.object_list, 'page_obj': page_obj, 'base': get_base(request),
+               'popular_tags': POPULAR_TAGS, 'liked_list': get_liked_list(request)}
     return render(request, "hot.html", context)
 
 
@@ -78,16 +104,8 @@ def login(request):
     login_form = LoginForm()
     if request.method == "POST":
         login_form = LoginForm(request.POST)
-        if login_form.is_valid():
-            user = authenticate(request, **login_form.cleaned_data)
-            if user is not None:
-                django.contrib.auth.login(request, user)
-                return redirect(request.GET.get("continue", "/"))
-            else:
-                if User.objects.filter(username=login_form.cleaned_data.get("username")).exists():
-                    login_form.add_error("password", "Неверный пароль!")
-                else:
-                    login_form.add_error("username", "Такого пользователя не существует!")
+        if login_form.is_valid() and login_form.clean(request=request) is None:
+            return redirect(request.GET.get("continue", "/"))
     return render(request, "login.html", context={"form": login_form, 'popular_tags': POPULAR_TAGS})
 
 
@@ -99,14 +117,7 @@ def signup(request):
     if request.method == "POST":
         reg_form = RegisterForm(request.POST)
         if reg_form.is_valid():
-            username = reg_form.cleaned_data['username'].strip()
-            email = reg_form.cleaned_data['email'].strip()
-            password = reg_form.cleaned_data['password'].strip()
-            nickname = reg_form.cleaned_data['nickname'].strip()
-            user = User.objects.create_user(username=username, email=email, password=password)
-            Profile.objects.create(user=user, nickname=nickname)
-            authenticate(request, username=username, password=password)
-            django.contrib.auth.login(request, user)
+            reg_form.save(request=request)
             return redirect(request.GET.get("continue", "/"))
     return render(request, "signup.html", context={"form": reg_form, 'popular_tags': POPULAR_TAGS})
 
@@ -118,22 +129,7 @@ def ask(request):
     if request.method == "POST":
         ask_form = AskForm(request.POST)
         if ask_form.is_valid():
-            title = ask_form.cleaned_data['title'].strip()
-            text = ask_form.cleaned_data['text'].strip()
-            tags = ask_form.cleaned_data['tags'].strip()
-
-            tags_objects = []
-            for tag in tags.split(','):
-                cur_tag = tag.lstrip()
-                cur_tag = cur_tag.rstrip()
-                objects = Tag.objects.all().filter(tag_title=cur_tag)
-                if len(objects) > 0:
-                    tags_objects.append(objects[0])
-                else:
-                    tags_objects.append(Tag.objects.create(tag_title=cur_tag))
-            new_question = Question.objects.create(question_title=title, question_view=title,
-                                                   question_body=text, author=request.user)
-            new_question.tags.set(tags_objects)
+            new_question = ask_form.save(user=request.user)
             return redirect(f"question/{new_question.question_id}")
     return render(request, "ask.html", context={'form': ask_form, 'popular_tags': POPULAR_TAGS})
 
@@ -150,7 +146,8 @@ def tag(request, tag_title):
     tag_questions = Question.objects.get_questions_by_tag(tag)
     page_obj = paginate(tag_questions, request, 10)
     context = {'questions': page_obj.object_list, 'tag': tag_title, 'page_obj': page_obj,
-               'base': get_base(request), 'popular_tags': POPULAR_TAGS}
+               'base': get_base(request), 'popular_tags': POPULAR_TAGS,
+               'liked_list': get_liked_list(request)}
     return render(request, "listtag.html", context)
 
 
@@ -158,45 +155,66 @@ def tag(request, tag_title):
 @login_required(login_url='login', redirect_field_name='continue')
 def profile(request):
     profile_form = ProfileForm()
-    user_profile = Profile.objects.all().filter(user_id=request.user.id)
     user = request.user
+    user_profile = user.profile
+
     if request.method == "GET":
-        profile_form = ProfileForm()
-        if len(user_profile) > 0:
-            user_profile = user_profile[0]
-            nick = user_profile.nickname if user_profile.nickname is not None else ""
-            email = user.email if user.email is not None else ""
-            profile_form.fields['nickname'].initial = nick
-            profile_form.fields['email'].initial = email
+        params_dict = model_to_dict(user) | model_to_dict(user_profile)
+        profile_form = ProfileForm(initial=params_dict)
+
     if request.method == "POST":
-        profile_form = ProfileForm(request.POST)
-        if profile_form.is_valid():
-            email = profile_form.cleaned_data['email'].strip()
-            nickname = profile_form.cleaned_data['nickname'].strip()
-
-            if User.objects.filter(email=email).exists():
-                if User.objects.filter(email=email)[0] != request.user:
-                    profile_form.add_error("email", "Эта почта уже занята!")
-
-            if Profile.objects.filter(nickname=nickname).exists():
-                if Profile.objects.filter(nickname=nickname)[0].user != request.user:
-                    profile_form.add_error("nickname", "Этот никнейм уже занят!")
-
-            if len(profile_form.errors) > 0:
-                return render(request, "profile.html", context={'form': profile_form,
-                                                                'popular_tags': POPULAR_TAGS})
-
-            # avatar = profile_form.cleaned_data['avatar_path'].strip()
-            # (avatar)
-
-            user_profile = Profile.objects.all().filter(user_id=request.user.id)[0]
-            user.email = email
-            user_profile.nickname = nickname
-            user.save()
-            user_profile.save()
-            # user_profile.avatar = avatar
+        profile_form = ProfileForm(request.POST, request.FILES)
+        if profile_form.is_valid() and profile_form.clean(user=request.user) is None:
+            profile_form.save(user=request.user)
             return render(request, "profile.html", context={'form': profile_form,
                                                             'popular_tags': POPULAR_TAGS})
 
     return render(request, "profile.html", context={'form': profile_form,
                                                     'popular_tags': POPULAR_TAGS})
+
+
+@csrf_protect
+@login_required(login_url='login', redirect_field_name='continue')
+def question_like(request):
+    question_id = request.POST.get('question_id')
+    question_object = get_object_or_404(Question, question_id=question_id)
+    if QuestionLike.objects.toggle_like(user=request.user, question=question_object) == "disliked":
+        color = "white"
+    else:
+        color = "#98E4FF"
+    count = Question.objects.get_likes_count(question=question_object)
+    return JsonResponse({
+        'count': count,
+        'color': color
+    })
+
+
+@csrf_protect
+@login_required(login_url='login', redirect_field_name='continue')
+def answer_like(request):
+    if request.method == 'POST':
+        answer_id = request.POST.get('answer_id')
+        answer_object = get_object_or_404(Answer, answer_id=answer_id)
+        if AnswerLike.objects.toggle_like(user=request.user, answer=answer_object) == "disliked":
+            color = "white"
+        else:
+            color = "#98E4FF"
+        count = Answer.objects.get_likes_count(answer=answer_object)
+        return JsonResponse({
+            'count': count,
+            'color': color
+        })
+    return JsonResponse({})
+
+
+@csrf_protect
+@login_required(login_url='login', redirect_field_name='continue')
+def correct_answer(request):
+    if request.method == 'POST':
+        answer_id = request.POST.get('answer_id')
+        answer_object = get_object_or_404(Answer, answer_id=answer_id)
+        if request.user != answer_object.question:
+            return JsonResponse({})
+        answer_object.is_correct = True
+        answer_object.save()
+    return JsonResponse({})

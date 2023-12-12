@@ -5,7 +5,7 @@
         <a href="{% url 'question' question.question_id %}"><h3>{{ question.question_title }}</h3></a>
     </div>
     <div class="question-body">
-        <img src="{% static '/images/Aang.png' %}" class="question-image" alt="Question img">
+        <img src="{{ question.author.profile.avatar.url }}" class="question-image" alt="Question img">
         <p class="question-text">
             {{ question.question_view }}
         </p>

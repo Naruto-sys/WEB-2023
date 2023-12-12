@@ -1,11 +1,20 @@
 {% load static %}
 
 <div class="col-3 likes">
-    <p>
-        {{ question.likes_count }}
-        <button type="submit" class="btn btn-sm like-btn">
-            <img src="{% static '/images/like.svg' %}" class="like-img" alt="like" width="16px"
-                 height="16px">
-        </button>
+    <p class="question-like-section">
+        <span class="likes-count">
+            {{ question.likes_count }}
+        </span>
+        {% if question in liked_list %}
+    <button type="submit" class="btn btn-sm like-btn liked-btn" data-id="{{question.question_id}}">
+        <img src="{% static '/images/like.svg' %}" class="like-img" alt="like" width="16px"
+             height="16px">
+    </button>
+        {% else %}
+            <button type="submit" class="btn btn-sm like-btn not-liked" data-id="{{question.question_id}}">
+        <img src="{% static '/images/like.svg' %}" class="like-img" alt="like" width="16px"
+             height="16px">
+    </button>
+        {% endif %}
     </p>
 </div>

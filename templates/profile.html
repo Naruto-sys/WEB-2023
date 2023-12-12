@@ -7,14 +7,22 @@
     <h1>Профиль</h1>
 </div>
 <div class="row" align="left">
-    <form method="POST" class="form" enctype="multipart/form-data">
-        {% bootstrap_form form %}
+    <form method="POST" class="form" enctype="multipart/form-data" action="{% url 'profile' %}">
         {% csrf_token %}
+        {% bootstrap_form form %}
         <div class="row" align="center">
             {% buttons %}
                 <button type="submit" class="btn btn-primary">Сохранить</button>
             {% endbuttons %}
         </div>
+        {% if request.user.profile.avatar %}
+        <div class="form-group col-12 row profile-input" align="left">
+            Текущий аватар
+            <div class="col-8">
+                <img src="{{ request.user.profile.avatar.url }}" class="question-image" alt="Profile avatar">
+            </div>
+        </div>
+        {% endif %}
     </form>
 </div>
 {% endblock %}

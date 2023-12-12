@@ -8,9 +8,9 @@
     <h1>Новый вопрос</h1>
 </div>
 <div class="row" align="left">
-    <form method="POST" class="form">
-        {% bootstrap_form form %}
+    <form method="POST" class="form" action="{% url 'ask' %}">
         {% csrf_token %}
+        {% bootstrap_form form %}
         <div class="row" align="center">
             {% buttons %}
             <button type="submit" class="btn btn-primary">Спросить</button>

@@ -6,7 +6,6 @@
     <title>Spirit</title>
     <!-- Bootstrap core CSS -->
     <link href=" {% static '/bootstrap-5.0.2-dist/css/bootstrap.min.css' %}" rel="stylesheet">
-    <script src=" {% static '/bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js' %}"></script>
     <!-- Custom styles for this template -->
     <link href=" {% static '/css/main.css' %} " rel="stylesheet">
 </head>
@@ -40,7 +39,8 @@
                 <ul class="navbar-nav me-0 mb-2 mb-md-0 ">
                     <li class="nav-item justify-content-end">
                         <a class="nav-link menu-item" aria-current="page" href="{% url 'profile' %}">
-                            <img class="avatar my-2" src="{% static '/images/avatar.jpg' %}" alt="avatar" width="36px"
+                            <img class="avatar my-2" src="{{ request.user.profile.avatar.url }}" alt="avatar"
+                                 width="36px"
                                  height="36px">
                         </a>
                     </li>
@@ -59,7 +59,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link menu-item" aria-current="page" href="{% url 'end_session' %}?continue={{ request.path }}">
+                        <a class="nav-link menu-item" aria-current="page"
+                           href="{% url 'end_session' %}?continue={{ request.path }}">
                             <button class="btn btn-outline-info my-2">
                                 Выйти
                             </button>
@@ -87,6 +88,9 @@
 </main>
 
 {% include 'components/footer.html' %}
-
+<script src=" {% static '/bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static '/js/main.js' %}"></script>
+{% csrf_token %}
 </body>
+
 </html>

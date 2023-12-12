@@ -3,22 +3,34 @@
 <div class="row answer">
     <div class="answer-body anchor" id="{{ answer.answer_id }}">
         <p class="answer-text">
-            <img src="{% static '/images/avatar.jpg' %}" class="answer-image" alt="answer img">
+            <img src="{{ answer.author.profile.avatar.url }}" class="answer-image" alt="answer img">
             {{ answer.answer_body }}
         </p>
         <div class="row answer-bot">
             <div class="col-9" align="left">
-                <form>
-                    <div class="form-check" align="left">
-                        <input class="form-check-input" type="checkbox" value="" id="{{ answer.answer_id }}ans">
-                        <label class="form-check-label" for="{{ answer.answer_id }}ans">
-                            Правильный ответ
-                        </label>
-                        <button type="submit" class="btn btn-sm btn-outline-info correct-btn">
-                            Подтвердить
-                        </button>
-                    </div>
-                </form>
+
+
+                {% if answer in correct_answers %}
+                <span class="correct" data-id="{{ answer.answer_id }}">
+                    Этот ответ был отмечен как правильный!
+                </span>
+                {% else %}
+                {% if request.user.is_authenticated %}
+                {% if request.user == question.author %}
+                <div class="form-check" align="left">
+                    <input class="form-check-input" type="checkbox" value="" id="{{ answer.answer_id }}ans">
+                    <label class="form-check-label" for="{{ answer.answer_id }}ans">
+                        Правильный ответ
+                    </label>
+                    <button class="btn btn-sm btn-outline-info correct-btn" data-id="{{answer.answer_id}}">
+                        Подтвердить
+                    </button>
+                    <span class="correct" data-id="{{ answer.answer_id }}">
+                </span>
+                </div>
+                {% endif %}
+                {% endif %}
+                {% endif %}
             </div>
             {% include 'components/answer_likes.html' %}
         </div>
