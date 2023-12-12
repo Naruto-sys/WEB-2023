@@ -8,8 +8,8 @@
 </div>
 <div class="row" align="left">
     <form method="POST" class="form">
-        {% bootstrap_form form %}
         {% csrf_token %}
+        {% bootstrap_form form %}
         <div class="row" align="center">
             {% buttons %}
             <button type="submit" class="btn btn-primary">Войти</button>

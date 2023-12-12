@@ -6,7 +6,7 @@
     </div>
     <div class="question-body">
         <p class="question-text">
-            <img src="{% static '/images/Aang.png' %}" class="question-image" alt="Question img">
+            <img src="{{ question.author.profile.avatar.url }}" class="question-image" alt="Question img">
             {{ question.question_body }}
         </p>
         <div class="row question-bot">

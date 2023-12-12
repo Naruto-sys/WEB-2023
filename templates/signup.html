@@ -7,9 +7,9 @@
 </div>
 
 <div class="row" align="center">
-    <form method="POST" class="form" enctype="multipart/form-data">
-        {% bootstrap_form form %}
+    <form method="POST" class="form" enctype="multipart/form-data" action="{% url 'signup' %}">
         {% csrf_token %}
+        {% bootstrap_form form %}
         <div class="row" align="center">
             {% buttons %}
             <button type="submit" class="btn btn-primary">Зарегистрироваться</button>

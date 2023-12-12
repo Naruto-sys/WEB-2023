@@ -2,6 +2,14 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+class ProfileManager(models.Manager):
+    def get_profile_by_user(self, user):
+        res = self.filter(user=user)
+        if len(res) == 0:
+            return None
+        return res[0]
+
+
 class QuestionManager(models.Manager):
     def get_hot_questions(self):
         return self.order_by('-likes_count', '-answers_count', '-created_at')
@@ -15,6 +23,30 @@ class QuestionManager(models.Manager):
     def get_questions_by_tag(self, tag):
         return tag.questions.order_by('-created_at')
 
+    def get_likes_count(self, question):
+        question.likes_count = len(QuestionLike.objects.filter(question=question))
+        print(question)
+        question.save()
+        return question.likes_count
+
+
+class QuestionLikeManager(models.Manager):
+    def toggle_like(self, user, question):
+        if self.filter(liked_by=user, question=question).exists():
+            self.filter(liked_by=user, question=question).delete()
+            return "disliked"
+        self.create(liked_by=user, question=question)
+        return "liked"
+
+
+class AnswerLikeManager(models.Manager):
+    def toggle_like(self, user, answer):
+        if self.filter(liked_by=user, answer=answer).exists():
+            self.filter(liked_by=user, answer=answer).delete()
+            return "disliked"
+        self.create(liked_by=user, answer=answer)
+        return "liked"
+
 
 class AnswerManager(models.Manager):
     def get_answers_by_question(self, question):
@@ -23,6 +55,11 @@ class AnswerManager(models.Manager):
             return all_answers.filter(question__exact=question).order_by('-created_at')
         except self.model.DoesNotExist as e:
             return Answer.objects.none()
+
+    def get_likes_count(self, answer):
+        answer.likes_count = len(AnswerLike.objects.filter(answer=answer))
+        answer.save()
+        return answer.likes_count
 
 
 class TagManager(models.Manager):
@@ -39,7 +76,7 @@ class Question(models.Model):
     question_title = models.CharField(null=False, blank=False, max_length=250)
     question_view = models.CharField(null=False, blank=False, max_length=120)
     question_body = models.CharField(null=False, blank=False)
-    created_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     likes_count = models.IntegerField(default=0)
     answers_count = models.IntegerField(default=0)
@@ -56,7 +93,7 @@ class Answer(models.Model):
     answer_id = models.AutoField(primary_key=True)
     answer_body = models.CharField(null=False, blank=False)
     author = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    created_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     likes_count = models.IntegerField(default=0)
     is_correct = models.BooleanField(default=False)
     objects = AnswerManager()
@@ -67,8 +104,9 @@ class Answer(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, null=False, blank=False)
-    avatar_path = models.URLField(null=True, blank=True, max_length=500)
+    avatar = models.ImageField(null=True, blank=True, default="avatar.jpg", upload_to="avatar/%Y/%m/%d")
     nickname = models.CharField(max_length=256, unique=True, null=False, blank=False)
+    objects = ProfileManager()
 
     def __str__(self):
         return f"Профиль {str(self.user)}"
@@ -85,6 +123,7 @@ class Tag(models.Model):
 class QuestionLike(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     liked_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    objects = QuestionLikeManager()
 
     class Meta:
         unique_together = ('question', 'liked_by',)
@@ -96,6 +135,7 @@ class QuestionLike(models.Model):
 class AnswerLike(models.Model):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     liked_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    objects = AnswerLikeManager()
 
     class Meta:
         unique_together = ('answer', 'liked_by',)
