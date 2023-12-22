@@ -62,8 +62,8 @@ def paginate(objects, request, per_page=10):
 
 
 def index(request):
-    questions = get_newest_questions()  # так правильно
-    # questions = NEWEST_QUESTIONS  # так быстрее
+    # questions = get_newest_questions()  # так правильно
+    questions = NEWEST_QUESTIONS  # так быстрее
     page_obj = paginate(questions, request, 10)
     context = {'questions': page_obj.object_list, 'page_obj': page_obj, 'base': get_base(request),
                'liked_list': get_liked_list(request), 'request': request, 'popular_tags': POPULAR_TAGS}
@@ -91,8 +91,8 @@ def question(request, question_id):
 
 
 def hot(request):
-    questions = get_hot_questions()  # так правильно
-    # questions = HOT_QUESTIONS  # а так быстрее
+    # questions = get_hot_questions()  # так правильно
+    questions = HOT_QUESTIONS  # а так быстрее
     page_obj = paginate(questions, request, 10)
     context = {'questions': page_obj.object_list, 'page_obj': page_obj, 'base': get_base(request),
                'popular_tags': POPULAR_TAGS, 'liked_list': get_liked_list(request)}
@@ -104,7 +104,8 @@ def login(request):
     login_form = LoginForm()
     if request.method == "POST":
         login_form = LoginForm(request.POST)
-        if login_form.is_valid() and login_form.clean(request=request) is None:
+        if login_form.is_valid():
+            django.contrib.auth.login(request, authenticate(**login_form.cleaned_data))
             return redirect(request.GET.get("continue", "/"))
     return render(request, "login.html", context={"form": login_form, 'popular_tags': POPULAR_TAGS})
 
@@ -117,7 +118,8 @@ def signup(request):
     if request.method == "POST":
         reg_form = RegisterForm(request.POST)
         if reg_form.is_valid():
-            reg_form.save(request=request)
+            reg_form.save()
+            django.contrib.auth.login(request, request.user)
             return redirect(request.GET.get("continue", "/"))
     return render(request, "signup.html", context={"form": reg_form, 'popular_tags': POPULAR_TAGS})
 
@@ -142,8 +144,8 @@ def end_session(request):
 
 
 def tag(request, tag_title):
-    tag = list(Tag.objects.get_tag_by_title(tag_title))[0]
-    tag_questions = Question.objects.get_questions_by_tag(tag)
+    tag_element = list(Tag.objects.get_tag_by_title(tag_title))[0]
+    tag_questions = Question.objects.get_questions_by_tag(tag_element)
     page_obj = paginate(tag_questions, request, 10)
     context = {'questions': page_obj.object_list, 'tag': tag_title, 'page_obj': page_obj,
                'base': get_base(request), 'popular_tags': POPULAR_TAGS,
@@ -154,18 +156,18 @@ def tag(request, tag_title):
 @csrf_protect
 @login_required(login_url='login', redirect_field_name='continue')
 def profile(request):
-    profile_form = ProfileForm()
     user = request.user
     user_profile = user.profile
+    profile_form = ProfileForm(user)
 
     if request.method == "GET":
         params_dict = model_to_dict(user) | model_to_dict(user_profile)
-        profile_form = ProfileForm(initial=params_dict)
+        profile_form = ProfileForm(user, initial=params_dict)
 
     if request.method == "POST":
-        profile_form = ProfileForm(request.POST, request.FILES)
-        if profile_form.is_valid() and profile_form.clean(user=request.user) is None:
-            profile_form.save(user=request.user)
+        profile_form = ProfileForm(user, request.POST, request.FILES)
+        if profile_form.is_valid():
+            profile_form.save()
             return render(request, "profile.html", context={'form': profile_form,
                                                             'popular_tags': POPULAR_TAGS})
 
@@ -202,9 +204,10 @@ def answer_like(request):
         count = Answer.objects.get_likes_count(answer=answer_object)
         return JsonResponse({
             'count': count,
-            'color': color
+            'color': color,
+            'message': 'OK'
         })
-    return JsonResponse({})
+    return JsonResponse({'method': 'GET', 'message': 'OK'})
 
 
 @csrf_protect
@@ -214,7 +217,7 @@ def correct_answer(request):
         answer_id = request.POST.get('answer_id')
         answer_object = get_object_or_404(Answer, answer_id=answer_id)
         if request.user != answer_object.question:
-            return JsonResponse({})
+            return JsonResponse({'message': 'Answer not found'})
         answer_object.is_correct = True
         answer_object.save()
-    return JsonResponse({})
+    return JsonResponse({'method': 'GET', 'message': 'OK'})

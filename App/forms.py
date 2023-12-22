@@ -10,37 +10,26 @@ from App.models import Profile, Answer, Tag, Question
 
 
 class LoginForm(forms.Form):
-    username = forms.CharField()
-    username.label = "Имя пользователя"
-    password = forms.CharField(widget=forms.PasswordInput)
-    password.label = "Пароль"
+    username = forms.CharField(label="Имя пользователя")
+    password = forms.CharField(widget=forms.PasswordInput, label="Пароль")
 
-    def clean(self, request=None):
+    def clean(self):
         super().clean()
-        if request is None:
-            return
-        user = authenticate(request, **self.cleaned_data)
-        if user is not None:
-            login(request, user)
-            return
-        if User.objects.filter(username=self.cleaned_data.get("username")).exists():
-            self.add_error("password", "Неверный пароль!")
-        else:
-            self.add_error("username", "Такого пользователя не существует!")
-        return 0
+        user = User.objects.filter(username=self.cleaned_data.get("username"))
+        if not user.exists():
+            raise ValidationError({"username": ["Такого пользователя не существует!"]})
+        user = user[0]
+        if not user.check_password(self.cleaned_data.get("password")):
+            raise ValidationError({"password": ["Неверный пароль!"]})
+        return self.cleaned_data
 
 
 class RegisterForm(forms.Form):
-    username = forms.CharField(min_length=6, max_length=30)
-    username.label = "Введите имя пользователя"
-    email = forms.EmailField(widget=forms.EmailInput)
-    email.label = "Введите почту"
-    nickname = forms.CharField(min_length=6, max_length=30)
-    nickname.label = "Введите никнейм (будет виден на сайте)"
-    password = forms.CharField(widget=forms.PasswordInput)
-    password.label = "Введите Пароль"
-    repeat_password = forms.CharField(widget=forms.PasswordInput)
-    repeat_password.label = "Повторите пароль"
+    username = forms.CharField(min_length=6, max_length=30, label="Введите имя пользователя")
+    email = forms.EmailField(widget=forms.EmailInput, label="Введите почту")
+    nickname = forms.CharField(min_length=6, max_length=30, label="Введите никнейм (будет виден на сайте)")
+    password = forms.CharField(widget=forms.PasswordInput, label="Введите Пароль")
+    repeat_password = forms.CharField(widget=forms.PasswordInput, label="Повторите пароль")
 
     def clean_password(self):
         activate("ru")
@@ -52,7 +41,7 @@ class RegisterForm(forms.Form):
         username = self.cleaned_data.get("username")
         username = username.strip()
         if (len(username)) < 6:
-            self.add_error("username", "Имя пользователя не может быть короче 6 символов!")
+            raise ValidationError("Имя пользователя не может быть короче 6 символов!")
         if User.objects.filter(username=self.cleaned_data['username']).exists():
             raise ValidationError("Это имя пользователя уже занято!")
         return self.cleaned_data.get('username')
@@ -62,16 +51,16 @@ class RegisterForm(forms.Form):
         nickname = self.cleaned_data.get("nickname")
         nickname = nickname.strip()
         if (len(nickname)) < 6:
-            self.add_error("nickname", "Никнейм не может быть короче 6 символов!")
-        if Profile.objects.filter(nickname='nickname').exists():
+            raise ValidationError("Никнейм не может быть короче 6 символов!")
+        if Profile.objects.filter(nickname=nickname).exists():
             raise ValidationError("Этот никнейм уже занят!")
-        return self.cleaned_data.get('nickname')
+        return self.cleaned_data.get("nickname").strip()
 
     def clean_email(self):
         activate("ru")
         validate_email(self.cleaned_data['email'])
         if User.objects.filter(email=self.cleaned_data['email']).exists():
-            self.add_error("email", "Эта почта уже занята!")
+            raise ValidationError("Эта почта уже занята!")
         return self.cleaned_data.get('email')
 
     def clean(self):
@@ -82,43 +71,38 @@ class RegisterForm(forms.Form):
         if validate_password(self.cleaned_data.get('password')) is not None:
             return self.cleaned_data
         if self.cleaned_data.get('password') != self.cleaned_data.get('repeat_password'):
-            self.add_error("password", "Пароли различаются!")
-            self.add_error("repeat_password", "Пароли различаются!")
+            raise ValidationError({"password": "Пароли различаются!",
+                                   "repeat_password": "Пароли различаются!"})
         return self.cleaned_data
 
-    def save(self, request=None):
+    def save(self):
         username = self.cleaned_data['username'].strip()
         email = self.cleaned_data['email'].strip()
         password = self.cleaned_data['password'].strip()
         nickname = self.cleaned_data['nickname'].strip()
         user = User.objects.create_user(username=username, email=email, password=password)
         Profile.objects.create(user=user, nickname=nickname)
-        authenticate(request, username=username, password=password)
         user.save()
-        login(request, user)
 
 
 class AskForm(forms.Form):
-    title = forms.CharField(min_length=8, max_length=250)
-    title.label = "Заголовок"
-    text = forms.CharField(min_length=20, widget=forms.Textarea)
-    text.label = "Ваш вопрос"
-    tags = forms.CharField(help_text="Введите теги вопроса через запятую")
-    tags.label = "Теги"
+    title = forms.CharField(min_length=8, max_length=250, label="Заголовок")
+    text = forms.CharField(min_length=20, widget=forms.Textarea, label="Ваш вопрос")
+    tags = forms.CharField(help_text="Введите теги вопроса через запятую", label="Теги")
 
     def clean_title(self):
         title = self.cleaned_data.get("title")
         title = title.strip()
         if (len(title)) < 8:
-            self.add_error("title", "Заголовок содержит меньше 8 символов!")
-        return self.cleaned_data.get("title")
+            raise ValidationError("Заголовок содержит меньше 8 символов!")
+        return title
 
     def clean_text(self):
         text = self.cleaned_data.get("text")
         text = text.strip()
         if (len(text)) < 20:
-            self.add_error("text", "Вопрос содержит меньше 20 символов!")
-        return self.cleaned_data.get("text")
+            raise ValidationError("Вопрос содержит меньше 20 символов!")
+        return text
 
     def clean_tags(self):
         tags = self.cleaned_data.get("tags")
@@ -126,29 +110,25 @@ class AskForm(forms.Form):
         tags = [tag.strip() for tag in tags]
 
         if len(tags) == 0:
-            self.add_error("tags", "У вопроса должен быть хотя бы 1 тег")
+            raise ValidationError("У вопроса должен быть хотя бы 1 тег")
         if len(tags) > 3:
-            self.add_error("tags", "Введите не больше 3 тегов")
+            raise ValidationError("Введите не больше 3 тегов")
         for tag in tags:
             if len(tag) == 0:
-                self.add_error("tags", "Тег не может быть пустой строкой")
+                raise ValidationError("Тег не может быть пустой строкой")
             if tag.count(" ") > 0:
-                self.add_error("tags", "Внутри тегов не может быть пробелов")
+                raise ValidationError("Внутри тегов не может быть пробелов")
             if '/' in tag:
-                self.add_error("tags", "Внутри тегов не может быть символов '/'")
+                raise ValidationError("Внутри тегов не может быть символов '/'")
         return self.cleaned_data.get("tags")
 
-    def clean(self):
-        super().clean()
-
     def save(self, user=None):
-        title = self.cleaned_data['title'].strip()
-        text = self.cleaned_data['text'].strip()
+        title = self.cleaned_data['title']
+        text = self.cleaned_data['text']
         tags = self.cleaned_data['tags'].strip()
         tags_objects = []
         for tag in tags.split(','):
-            cur_tag = tag.lstrip()
-            cur_tag = cur_tag.rstrip()
+            cur_tag = tag.strip()
             objects = Tag.objects.all().filter(tag_title=cur_tag)
             if len(objects) > 0:
                 tags_objects.append(objects[0])
@@ -162,69 +142,62 @@ class AskForm(forms.Form):
 
 
 class ProfileForm(forms.Form):
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
     activate("ru")
-    email = forms.EmailField()
-    email.label = "Почта"
-    nickname = forms.CharField(min_length=6, max_length=30)
-    nickname.label = "Никнейм"
-    avatar = forms.ImageField(required=False, widget=forms.FileInput())
-    avatar.label = "Аватар"
+    email = forms.EmailField(label="Почта")
+    nickname = forms.CharField(min_length=6, max_length=30, label="Никнейм")
+    avatar = forms.ImageField(required=False, widget=forms.FileInput(), label="Аватар")
 
     def clean_nickname(self):
         activate("ru")
         nickname = self.cleaned_data.get("nickname")
         nickname = nickname.strip()
         if (len(nickname)) < 6:
-            self.add_error("nickname", "Никнейм не может быть короче 6 символов!")
-        return self.cleaned_data.get("nickname")
+            raise ValidationError("Никнейм не может быть короче 6 символов!")
+        return nickname
 
     def clean_email(self):
         activate("ru")
         validate_email(self.cleaned_data['email'])
         return self.cleaned_data.get('email')
 
-    def clean(self, user=None):
+    def clean(self):
         activate("ru")
         super().clean()
-        if user is None:
-            return
-        email = self.cleaned_data['email'].strip()
-        nickname = self.cleaned_data['nickname'].strip()
+        email = self.cleaned_data['email']
+        nickname = self.cleaned_data['nickname']
 
         if User.objects.filter(email=email).exists():
-            if User.objects.filter(email=email)[0] != user:
-                self.add_error("email", "Эта почта уже занята!")
-                return 0
+            if User.objects.filter(email=email)[0] != self.user:
+                raise ValidationError("Эта почта уже занята!")
 
         if Profile.objects.filter(nickname=nickname).exists():
-            if Profile.objects.filter(nickname=nickname)[0].user != user:
-                self.add_error("nickname", "Этот никнейм уже занят!")
-                return 0
+            if Profile.objects.filter(nickname=nickname)[0].user != self.user:
+                raise ValidationError("Этот никнейм уже занят!")
 
-    def save(self, user=None):
+    def save(self):
         activate("ru")
-        user_profile = user.profile
-        user.email = self.cleaned_data.get('email')
+        user_profile = self.user.profile
+        self.user.email = self.cleaned_data.get('email')
         user_profile.nickname = self.cleaned_data.get('nickname')
         if self.cleaned_data.get('avatar'):
             user_profile.avatar = self.cleaned_data.get('avatar')
-        user.save()
+        self.user.save()
         user_profile.save()
 
 
 class AnswerForm(forms.Form):
-    text = forms.CharField(min_length=10, widget=forms.Textarea)
-    text.label = "Ваш ответ"
+    text = forms.CharField(min_length=10, widget=forms.Textarea, label="Ваш ответ")
 
     def clean_text(self):
         text = self.cleaned_data.get("text")
         text = text.strip()
         if (len(text)) < 10:
-            self.add_error("text", "Ответ содержит меньше 10 символов!")
-        return self.cleaned_data.get("text")
-
-    def clean(self):
-        super().clean()
+            raise ValidationError("Ответ содержит меньше 10 символов!")
+        return text
 
     def save(self, question, user):
         text = self.cleaned_data.get('text').strip()
