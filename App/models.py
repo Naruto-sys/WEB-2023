@@ -1,13 +1,51 @@
+from datetime import datetime, timedelta
+
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.timezone import now
 
 
-class ProfileManager(models.Manager):
-    def get_profile_by_user(self, user):
-        res = self.filter(user=user)
-        if len(res) == 0:
-            return None
-        return res[0]
+def get_best_users_nicks():
+    last_week = now() - timedelta(days=7)
+    last_answers = list(Answer.objects.filter(created_at__gte=last_week))
+    last_questions = list(Question.objects.filter(created_at__gte=last_week))
+    nominee = last_answers + last_questions
+    nominee.sort(key=lambda nom: -nom.likes_count)  # Sort по кол-ву лайков среди вопросов и ответов
+    best_users = []
+    index = 0
+    # Если у юзера несколько вопросов-ответов из топа, он должен войти лишь раз
+    while len(best_users) < 10 and index < len(nominee):
+        if nominee[index].author not in best_users:
+            best_users.append(nominee[index].author)
+        index += 1
+    best_users_nicknames = [nom.profile.nickname for nom in best_users]
+    return best_users_nicknames
+
+
+def get_popular_tags():
+    all_tags = Tag.objects.all()
+
+    def key_func(tag):
+        three_months = now() - timedelta(days=90)
+        return -len(tag.questions.filter(created_at__gte=three_months))
+
+    return list(sorted(all_tags, key=key_func))[:10]
+
+
+def get_questions_by_tag(tag):
+    return tag.questions.order_by('-created_at')
+
+
+def get_question_likes_count(question):
+    question.likes_count = len(QuestionLike.objects.filter(question=question))
+    question.save()
+    return question.likes_count
+
+
+def get_answer_likes_count(answer):
+    answer.likes_count = len(AnswerLike.objects.filter(answer=answer))
+    answer.save()
+    return answer.likes_count
 
 
 class QuestionManager(models.Manager):
@@ -19,15 +57,6 @@ class QuestionManager(models.Manager):
 
     def get_question_by_id(self, question_id):
         return self.filter(question_id__exact=question_id)
-
-    def get_questions_by_tag(self, tag):
-        return tag.questions.order_by('-created_at')
-
-    def get_likes_count(self, question):
-        question.likes_count = len(QuestionLike.objects.filter(question=question))
-        print(question)
-        question.save()
-        return question.likes_count
 
 
 class QuestionLikeManager(models.Manager):
@@ -56,19 +85,10 @@ class AnswerManager(models.Manager):
         except self.model.DoesNotExist as e:
             return Answer.objects.none()
 
-    def get_likes_count(self, answer):
-        answer.likes_count = len(AnswerLike.objects.filter(answer=answer))
-        answer.save()
-        return answer.likes_count
-
 
 class TagManager(models.Manager):
     def get_tag_by_title(self, title):
         return self.filter(tag_title__exact=title)
-
-    def get_popular_tags(self):
-        all_tags = self.all()
-        return list(sorted(all_tags, key=lambda tag: -len(Question.objects.get_questions_by_tag(tag))))[:10]
 
 
 class Question(models.Model):
@@ -106,7 +126,6 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, null=False, blank=False)
     avatar = models.ImageField(null=True, blank=True, default="avatar.jpg", upload_to="avatar/%Y/%m/%d")
     nickname = models.CharField(max_length=256, unique=True, null=False, blank=False)
-    objects = ProfileManager()
 
     def __str__(self):
         return f"Профиль {str(self.user)}"

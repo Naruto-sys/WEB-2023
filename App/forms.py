@@ -83,6 +83,7 @@ class RegisterForm(forms.Form):
         user = User.objects.create_user(username=username, email=email, password=password)
         Profile.objects.create(user=user, nickname=nickname)
         user.save()
+        return user
 
 
 class AskForm(forms.Form):

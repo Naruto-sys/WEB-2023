@@ -7,11 +7,11 @@
 <div class="row answers-tittle" id="last-answer">
     <h2>Ответы</h2>
 </div>
-
+<div class="answers-column">
 {% for answer in answers %}
 {% include 'components/answer-item.html' %}
 {% endfor %}
-
+</div>
 {% include 'components/paginator.html'%}
 
 <div id="answer-form">
@@ -30,4 +30,168 @@
     </div>
     {% endif %}
 </div>
+
+<script src="https://unpkg.com/centrifuge@5.0.1/dist/centrifuge.js"></script>
+<script type="text/javascript">
+    const centrifuge = new Centrifuge("{{ centrifugo.ws_url }}", {
+      token: "{{ centrifugo.token }}"
+    });
+    centrifuge.on('connecting', function (ctx) {
+      console.log(`connecting: ${ctx.code}, ${ctx.reason}`);
+    }).on('connected', function (ctx) {
+      console.log(`connected over ${ctx.transport}`);
+    }).on('disconnected', function (ctx) {
+      console.log(`disconnected: ${ctx.code}, ${ctx.reason}`);
+    }).connect();
+    const sub = centrifuge.newSubscription("{{ centrifugo.channel }}");
+
+    function getCookieCSRF(name) {
+       let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+               }
+           }
+       }
+       return cookieValue;
+    }
+    const csrf_token = getCookieCSRF('csrftoken');
+
+    sub.on('publication', function (ctx) {
+      // console.log(ctx);
+      // console.log(ctx.data);
+      // console.log(ctx.data.answer_id);
+
+      const answers_column = document.getElementsByClassName("answers-column")[0];
+
+      const row_answer = document.createElement("div");
+      row_answer.className = "row answer";
+      const answer_body = document.createElement("div");
+      answer_body.className = "answer-body anchor"
+      answer_body.id = ctx.data.answer_id;
+      const answer_text = document.createElement("p");
+      answer_text.className = "answer-text";
+      const answer_img = document.createElement("img");
+      answer_img.src = ctx.data.author_img;
+      answer_img.className = "answer-image";
+      answer_text.appendChild(answer_img);
+      span_answer_text = document.createElement("span");
+      span_answer_text.textContent = ctx.data.answer_body;
+      answer_text.appendChild(span_answer_text);
+      answer_body.appendChild(answer_text);
+      row_answer.appendChild(answer_body);
+
+      const answer_bot = document.createElement("div");
+      answer_bot.className = "row answer-bot";
+      const answer_bot_left = document.createElement("div");
+      answer_bot_left.className = "col-9";
+      const answer_bot_right = document.createElement("div");
+      answer_bot_right.className = "col-3";
+      answer_bot.appendChild(answer_bot_left);
+      answer_bot.appendChild(answer_bot_right);
+
+      {% if request.user.is_authenticated %}
+      {% if request.user == question.author %}
+      const form_check = document.createElement("div");
+      form_check.className = "form-check";
+      form_check.setAttribute("align", "left");
+
+      form_check_input = document.createElement("input");
+      form_check_input.className = "form-check-input";
+      form_check_input.type = "checkbox";
+      form_check_input.setAttribute("id", ctx.data.answer_id + "ans");
+
+      form_check_label = document.createElement("label");
+      form_check_label.className = "form-check-label";
+      form_check_label.setAttribute("for", ctx.data.answer_id + "ans");
+      form_check_label.textContent = "Правильный ответ";
+
+      form_check_btn = document.createElement("button");
+      form_check_btn.className = "btn btn-sm btn-outline-info correct-btn";
+      form_check_btn.setAttribute("data-id", ctx.data.answer_id);
+      form_check_btn.textContent = "Подтвердить";
+
+      form_check_span = document.createElement("span");
+      form_check_span.className = "correct";
+      form_check_span.setAttribute("data-id", ctx.data.answer_id);
+
+      form_check.appendChild(form_check_input);
+      form_check.appendChild(form_check_label);
+      form_check.appendChild(form_check_btn);
+      form_check.appendChild(form_check_span);
+
+      answer_bot_left.appendChild(form_check);
+      // EVENT LISTENER
+      form_check_btn.addEventListener('click', function() {
+        if (form_check_input.checked) {
+            const formData = new FormData();
+            formData.append('answer_id', form_check_btn.dataset.id);
+            const request = new Request('/correct_answer/', {
+                method: 'POST',
+                body: formData,
+                headers: {'X-CSRFToken': csrf_token},
+            });
+            fetch(request)
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log({data});
+                    form_check_label.style.display = 'none';
+                    form_check_btn.style.display = 'none';
+                    form_check_input.style.display = 'none';
+                    form_check_span.textContent = 'Этот ответ был отмечен как правильный!'
+            })
+        }
+      });
+
+      {% endif %}
+      {% endif %}
+      const bot_p = document.createElement("p");
+      bot_p.className = "answer-like-section";
+      const bot_p_span =  document.createElement("span");
+      bot_p_span.textContent = ctx.data.likes_count + "  ";
+      bot_p_span.className = "likes-count";
+      const bot_btn =  document.createElement("button");
+      bot_btn.className = "btn btn-sm like-btn not-liked";
+      bot_btn.type = "submit";
+      bot_btn.setAttribute('data-id' , ctx.data.answer_id);
+
+      bot_btn.innerHTML = "<img src='/static/images/like.svg' class='like-img' alt='like' width='16px' height='16px'>";
+      bot_p.appendChild(bot_p_span);
+      bot_p.appendChild(bot_btn);
+      answer_bot_right.appendChild(bot_p);
+      answer_body.appendChild(answer_bot);
+
+      answers_column.insertBefore(row_answer, answers_column.firstChild);
+      document.title = "New Comment";
+
+      // BOT BTN EVENT LISTEN
+      bot_btn.addEventListener('click', function () {
+        const formData = new FormData();
+        formData.append('answer_id', ctx.data.answer_id);
+
+        const request = new Request('/answer_like/', {
+            method: 'POST',
+            body: formData,
+            headers: {'X-CSRFToken': csrf_token},
+        });
+        fetch(request)
+            .then((response) => response.json())
+            .then((data) => {
+                console.log({data});
+                bot_p_span.textContent = data.count + "  ";
+                bot_btn.style.background = data.color;
+            })
+    });
+    }).on('subscribing', function (ctx) {
+      console.log(`subscribing: ${ctx.code}, ${ctx.reason}`);
+    }).on('subscribed', function (ctx) {
+      console.log('subscribed', ctx);
+    }).on('unsubscribed', function (ctx) {
+      console.log(`unsubscribed: ${ctx.code}, ${ctx.reason}`);
+    }).subscribe();
+</script>
 {% endblock %}
