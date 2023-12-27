@@ -21,5 +21,4 @@ def simple_app(environ, start_response):
 
 
 application = simple_app
-#  gunicorn simple_wsgi:application (conf-file сам подгрузится)
-#  gunicorn -c gunicorn.conf.py simple_wsgi:application
+#  gunicorn --bind 127.0.0.1:8081 -w 1 simple_wsgi:application

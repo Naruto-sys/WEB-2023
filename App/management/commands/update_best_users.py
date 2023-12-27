@@ -9,4 +9,4 @@ class Command(BaseCommand):
     help = "Set cache of best users"
 
     def handle(self, *args, **kwargs):
-        cache.set(conf_settings.USERS_CACHE_KEY, get_best_users_nicks(), 900) # Храню 15мин, обновляю каждые 10
+        cache.set(conf_settings.USERS_CACHE_KEY, get_best_users_nicks(), 900)  # Храню 15мин, обновляю каждые 10
