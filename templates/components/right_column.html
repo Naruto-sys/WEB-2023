@@ -2,7 +2,7 @@
 <div class="col-4" align="left">
     <div class="row tags-div">
         <div class="tags-title">
-            <h2>Популярные теги</h2>
+            <h3>Популярные теги</h3>
         </div>
         <div class="tags">
             {% for tag in popular_tags %}
@@ -16,25 +16,15 @@
     </div>
     <div class="row members-div">
         <div class="members-title">
-            <h2>Топ-5 рейтинга</h2>
+            <h3>Топ лучших пользователей</h3>
         </div>
         <div class="members">
             <ol class="list-group list-group-flush">
+                {% for nick in best_users %}
                 <li class="list-group-item">
-                    <a href="">Miposhka</a>
+                    <a href="">{{ nick }}</a>
                 </li>
-                <li class="list-group-item">
-                    <a href="">Yatoro</a>
-                </li>
-                <li class="list-group-item">
-                    <a href="">Miraslav</a>
-                </li>
-                <li class="list-group-item">
-                    <a href="">Maga Halipov</a>
-                </li>
-                <li class="list-group-item">
-                    <a href="">Sanya Levin</a>
-                </li>
+                {% endfor %}
             </ol>
         </div>
     </div>

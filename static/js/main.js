@@ -33,7 +33,12 @@ for (let item of question_items) {
             .then((data) => {
                 console.log({data});
                 counter.innerHTML = data.count;
-                btn.style.background = data.color;
+                if (data.type == "liked") {
+                    btn.style.background = "#98E4FF";
+                }
+                if (data.type == "disliked") {
+                    btn.style.background = "white";
+                }
             })
     });
 }
@@ -57,7 +62,12 @@ for (let item of answer_items) {
             .then((data) => {
                 console.log({data});
                 counter.innerHTML = data.count;
-                btn.style.background = data.color;
+                if (data.type == "liked") {
+                    btn.style.background = "#98E4FF";
+                }
+                if (data.type == "disliked") {
+                    btn.style.background = "white";
+                }
             })
     });
 }

@@ -1,0 +1,56 @@
+ab -c 80 -n 20000 http://127.0.0.1/uploads/avatar.jpg
+
+
+This is ApacheBench, Version 2.3 <$Revision: 1879490 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 127.0.0.1 (be patient)
+Completed 2000 requests
+Completed 4000 requests
+Completed 6000 requests
+Completed 8000 requests
+Completed 10000 requests
+Completed 12000 requests
+Completed 14000 requests
+Completed 16000 requests
+Completed 18000 requests
+Completed 20000 requests
+Finished 20000 requests
+
+
+Server Software:        nginx/1.18.0
+Server Hostname:        127.0.0.1
+Server Port:            80
+
+Document Path:          /uploads/avatar.jpg
+Document Length:        89040 bytes
+
+Concurrency Level:      80
+Time taken for tests:   8.882 seconds
+Complete requests:      20000
+Failed requests:        0
+Total transferred:      1786200000 bytes
+HTML transferred:       1780800000 bytes
+Requests per second:    2251.80 [#/sec] (mean)
+Time per request:       35.527 [ms] (mean)
+Time per request:       0.444 [ms] (mean, across all concurrent requests)
+Transfer rate:          196394.64 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.2      0       3
+Processing:     4   35   4.8     35     165
+Waiting:        3   35   4.8     35     164
+Total:          4   35   4.8     35     165
+
+Percentage of the requests served within a certain time (ms)
+  50%     35
+  66%     37
+  75%     37
+  80%     37
+  90%     38
+  95%     39
+  98%     42
+  99%     45
+ 100%    165 (longest request)

@@ -84,7 +84,7 @@ DATABASES = {
         'NAME': 'askmekup',
         'USER': 'gavr',
         'PASSWORD': 'password',
-        'HOST': 'localhost',
+        'HOST': '172.26.96.1',
         'PORT': '5432',
     }
 }
@@ -131,9 +131,26 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+STAT_ROOT = BASE_DIR / 'static'
+
 STATICFILES_DIRS = [
     BASE_DIR / 'static'
 ]
 
 MEDIA_ROOT = BASE_DIR / 'uploads'
 MEDIA_URL = '/uploads/'
+
+CENTRIFUGO_WS_URL = "ws://127.0.0.1:8010/connection/websocket"
+CENTRIFUGO_TOKEN_HMAC_SECRET_KEY = "fc5fdb3b-f872-44fd-b190-67a5b3272887"
+CENTRIFUGO_API_URL = "http://127.0.0.1:8010/api"
+CENTRIFUGO_API_KEY = "065477fe-00e4-44f7-81b2-41fa0cb26a80"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
+        "LOCATION": "127.0.0.1:11211",
+    }
+}
+
+TAGS_CACHE_KEY = "tags_cache"
+USERS_CACHE_KEY = "users_cache"

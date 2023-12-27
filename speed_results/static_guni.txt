@@ -1,0 +1,56 @@
+ab -c 80 -n 20000 http://127.0.0.1:8000/uploads/avatar.jpg
+
+
+This is ApacheBench, Version 2.3 <$Revision: 1879490 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 127.0.0.1 (be patient)
+Completed 2000 requests
+Completed 4000 requests
+Completed 6000 requests
+Completed 8000 requests
+Completed 10000 requests
+Completed 12000 requests
+Completed 14000 requests
+Completed 16000 requests
+Completed 18000 requests
+Completed 20000 requests
+Finished 20000 requests
+
+
+Server Software:        gunicorn
+Server Hostname:        127.0.0.1
+Server Port:            8000
+
+Document Path:          /uploads/avatar.jpg
+Document Length:        89040 bytes
+
+Concurrency Level:      80
+Time taken for tests:   18.208 seconds
+Complete requests:      20000
+Failed requests:        0
+Total transferred:      1788140000 bytes
+HTML transferred:       1780800000 bytes
+Requests per second:    1098.40 [#/sec] (mean)
+Time per request:       72.833 [ms] (mean)
+Time per request:       0.910 [ms] (mean, across all concurrent requests)
+Transfer rate:          95902.64 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.1      0       4
+Processing:    10   73  15.7     69     390
+Waiting:        6   70  15.1     67     183
+Total:         11   73  15.7     69     390
+
+Percentage of the requests served within a certain time (ms)
+  50%     69
+  66%     71
+  75%     73
+  80%     74
+  90%     78
+  95%     91
+  98%    121
+  99%    174
+ 100%    390 (longest request)
